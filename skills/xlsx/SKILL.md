@@ -204,6 +204,64 @@ new_sheet['A1'] = 'Data'
 wb.save('modified.xlsx')
 ```
 
+### CRITICAL: Inserting rows into templates with fixed structure
+
+When filling data (e.g., product lists) into templates that have **summary rows, merged cells, or formulas below the data area**, you **MUST insert new rows first** before writing data. Never write directly into existing rows that may contain summary/footer content.
+
+**Why**: Templates often have merged cells, formulas (like `=SUM(...)`) and formatting in rows immediately after the data area. Writing data directly into these rows will corrupt the structure.
+
+**⚠️ IMPORTANT**: `openpyxl.insert_rows()` moves cell data but does **NOT** automatically move merged cell ranges. You MUST manually handle merges using the 3-step process: **unmerge → insert → re-merge**.
+
+```python
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.cell import range_boundaries
+
+n = len(products)
+insert_at = 14  # Row where products start
+
+# STEP 1: Save and unmerge all merged cells at or below insert_at
+merges_to_move = []
+for merge_range in list(ws.merged_cells.ranges):
+    if merge_range.min_row >= insert_at:
+        merges_to_move.append(str(merge_range))
+        ws.unmerge_cells(str(merge_range))
+
+# STEP 2: Insert N rows
+ws.insert_rows(insert_at, amount=n)
+
+# STEP 3: Re-merge at new positions (shifted down by n)
+for merge_str in merges_to_move:
+    min_col, min_row, max_col, max_row = range_boundaries(merge_str)
+    new_range = (
+        f"{get_column_letter(min_col)}{min_row + n}"
+        f":{get_column_letter(max_col)}{max_row + n}"
+    )
+    ws.merge_cells(new_range)
+
+# STEP 4: Fill product data into the newly inserted rows
+for i, product in enumerate(products):
+    row = insert_at + i
+    ws.cell(row=row, column=1, value=i + 1)
+    ws.cell(row=row, column=3, value=product["name"])
+    # ... fill other columns
+
+# STEP 5: Update formulas (SUM range, etc.)
+summary_row = original_summary_row + n
+ws.cell(row=summary_row, column=7).value = f'=SUM(G{insert_at}:G{insert_at + n - 1})'
+```
+
+```python
+# ❌ WRONG: Writing directly without inserting rows
+# This overwrites summary rows with merged cells!
+for i, product in enumerate(products):
+    ws.cell(row=14 + i, column=3, value=product["name"])  # May hit summary row!
+
+# ❌ WRONG: Using insert_rows alone without handling merges
+ws.insert_rows(14, amount=n)  # Merged cells do NOT move! They overlap product rows!
+```
+
+> **Template-specific prompts**: See `prompts/` directory for detailed instructions on specific templates (e.g., `prompts/crm-order-fill.md` for the CRM order template).
+
 ## Recalculating formulas
 
 Excel files created or modified by openpyxl contain formulas as strings but not calculated values. Use the provided `scripts/recalc.py` script to recalculate formulas:
