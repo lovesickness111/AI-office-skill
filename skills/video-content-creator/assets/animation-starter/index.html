@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HyperFrame animation starter</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #e8eff7; }
+    body { display: grid; place-items: center; }
+    .frame { position: relative; width: 432px; height: 768px; overflow: hidden; background: #f8fafc; }
+    .visual-frame { position: absolute; left: 0; top: 0; width: 432px; height: 432px; overflow: hidden; background:
+      radial-gradient(circle at 50% 18%, rgba(14, 165, 233, .16), transparent 36%),
+      linear-gradient(165deg, #ffffff 0%, #f4f8fc 58%, #e8eff7 100%); }
+    .host-frame { position: absolute; left: 0; top: 432px; width: 432px; height: 336px; overflow: hidden; background: #f8fafc; }
+    .grid { position: absolute; inset: 0; opacity: .42; background-image:
+      linear-gradient(rgba(15,23,42,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,.07) 1px, transparent 1px);
+      background-size: 36px 36px; mask-image: linear-gradient(to bottom, black, transparent 88%); }
+    .diagram { position: absolute; z-index: 1; left: 0; top: 106px; width: 432px; height: 220px; }
+    .eyebrow { position: absolute; z-index: 2; left: 24px; top: 18px; color: #087ea4; font-size: 10px; line-height: 1; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { position: absolute; z-index: 2; left: 24px; top: 40px; width: 384px; margin: 0; color: #0f172a; font-size: 31px; line-height: 1.02; letter-spacing: -.045em; }
+    h1 span { color: #087ea4; }
+    .caption { position: absolute; z-index: 2; left: 24px; top: 338px; width: 384px; height: 80px; overflow: hidden; display: grid; align-content: end; gap: 5px; }
+    .caption strong, .caption p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; }
+    .caption strong { color: #0f172a; font-size: 14px; line-height: 1.2; -webkit-line-clamp: 2; }
+    .caption p { width: 100%; margin: 0; color: #52647a; font-size: 10.5px; line-height: 1.35; -webkit-line-clamp: 2; }
+    .progress { height: 4px; margin-top: 3px; overflow: hidden; border-radius: 999px; background: #d7e2ec; }
+    .progress i { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #0891b2, #7c3aed); transform: scaleX(0); transform-origin: left; }
+    .node-title { fill: #f8fafc; font-weight: 800; font-size: 12px; text-anchor: middle; }
+    .node-copy { fill: #94a3b8; font-weight: 600; font-size: 8.5px; text-anchor: middle; }
+    .small-label { fill: #22d3ee; font-weight: 800; font-size: 8px; letter-spacing: 1px; text-anchor: middle; }
+  </style>
+</head>
+<body>
+  <main class="frame" data-capture-stage="0,0,432,768" aria-label="Sân khấu quay desktop với minh họa phía trên và vùng Host phía dưới">
+    <section class="visual-frame" data-visual-frame="0,0,432,432" aria-label="Minh họa kiến trúc tách khối">
+      <div class="grid"></div>
+      <div class="eyebrow">Animation starter</div>
+      <h1>Một khối lớn.<br><span>Ba luồng rõ ràng.</span></h1>
+
+      <svg class="diagram" viewBox="0 0 432 220" role="img" aria-labelledby="svgTitle svgDesc">
+        <title id="svgTitle">Hệ thống nguyên khối tách thành ba dịch vụ</title>
+        <desc id="svgDesc">Một khối trung tâm chuyển thành API, xử lý và dữ liệu với các gói tin di chuyển giữa chúng.</desc>
+        <defs>
+          <linearGradient id="monoFill" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#273650"/><stop offset="1" stop-color="#172033"/>
+          </linearGradient>
+          <linearGradient id="serviceFill" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#112943"/><stop offset="1" stop-color="#10182a"/>
+          </linearGradient>
+          <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <g id="mono" transform="translate(216 110)">
+          <rect x="-94" y="-48" width="188" height="96" rx="20" fill="url(#monoFill)" stroke="#475569" stroke-width="2"/>
+          <circle cx="0" cy="-17" r="18" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+          <path d="M-8-17h16M0-25v16" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+          <text class="small-label" y="14">BEFORE</text>
+          <text class="node-title" y="29">ONE BIG BLOCK</text>
+          <text class="node-copy" y="42">mọi thay đổi cùng một nhịp</text>
+        </g>
+
+        <g id="connections" opacity="0">
+          <path d="M148 70 Q216 18 284 70" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="6 6"/>
+          <path d="M148 70 Q216 204 284 70" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="6 6"/>
+        </g>
+
+        <g id="services" opacity="0">
+          <g class="service" data-index="0" transform="translate(92 70)">
+            <rect x="-56" y="-30" width="112" height="60" rx="14" fill="url(#serviceFill)" stroke="#22d3ee" stroke-width="2"/>
+            <circle cy="-10" r="9" fill="#22d3ee" opacity=".18"/><path d="M-4-10h8M0-14v8" stroke="#67e8f9" stroke-width="2" stroke-linecap="round"/>
+            <text class="node-title" y="10">API</text><text class="node-copy" y="23">nhận yêu cầu</text>
+          </g>
+          <g class="service" data-index="1" transform="translate(340 70)">
+            <rect x="-56" y="-30" width="112" height="60" rx="14" fill="url(#serviceFill)" stroke="#a78bfa" stroke-width="2"/>
+            <circle cy="-10" r="9" fill="#a78bfa" opacity=".18"/><path d="M-5-10h10M-3-13l-3 3 3 3M3-13l3 3-3 3" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text class="node-title" y="10">WORKER</text><text class="node-copy" y="23">xử lý độc lập</text>
+          </g>
+          <g class="service" data-index="2" transform="translate(216 165)">
+            <rect x="-56" y="-30" width="112" height="60" rx="14" fill="url(#serviceFill)" stroke="#34d399" stroke-width="2"/>
+            <ellipse cy="-13" rx="11" ry="4" fill="#34d399" opacity=".4"/><path d="M-11-13v10c0 3 5 5 11 5s11-2 11-5v-10M-11-8c0 3 5 5 11 5s11-2 11-5" fill="none" stroke="#6ee7b7" stroke-width="2"/>
+            <text class="node-title" y="10">DATA</text><text class="node-copy" y="23">giữ trạng thái</text>
+          </g>
+        </g>
+
+        <g id="packets" opacity="0" filter="url(#glow)">
+          <circle class="packet" data-path="upper" r="4" fill="#67e8f9"/>
+          <circle class="packet" data-path="lower" r="4" fill="#a78bfa"/>
+        </g>
+      </svg>
+
+      <section class="caption">
+        <strong id="captionTitle">Một hệ thống, mọi thứ cùng nhịp.</strong>
+        <p id="captionCopy">Thay đổi nhỏ cũng kéo cả hệ thống đi cùng.</p>
+        <div class="progress"><i id="progressBar"></i></div>
+      </section>
+    </section>
+    <section class="host-frame" data-host-frame="0,432,432,336" aria-label="Vùng trống để Human Host đặt khung camera"></section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+      const durationMs = 6000;
+      const mono = document.querySelector("#mono");
+      const services = document.querySelector("#services");
+      const connections = document.querySelector("#connections");
+      const packets = document.querySelector("#packets");
+      const serviceNodes = [...document.querySelectorAll(".service")];
+      const packetNodes = [...document.querySelectorAll(".packet")];
+      const captionTitle = document.querySelector("#captionTitle");
+      const captionCopy = document.querySelector("#captionCopy");
+      const progressBar = document.querySelector("#progressBar");
+      let manual = false;
+      let manualLocked = false;
+      let pausedAt = 0;
+      let playStarted = performance.now();
+      let frameRequest = null;
+
+      const clamp = (value, low = 0, high = 1) => Math.min(high, Math.max(low, value));
+      const smooth = (value) => {
+        const x = clamp(value);
+        return x * x * (3 - 2 * x);
+      };
+      const between = (progress, start, end) => smooth((progress - start) / (end - start));
+      const point = (from, via, to, t) => {
+        const a = (1 - t) * (1 - t);
+        const b = 2 * (1 - t) * t;
+        const c = t * t;
+        return { x: a * from.x + b * via.x + c * to.x, y: a * from.y + b * via.y + c * to.y };
+      };
+
+      function applyFrame(milliseconds) {
+        const time = clamp(Number(milliseconds) || 0, 0, durationMs);
+        const progress = time / durationMs;
+        const monoOut = between(progress, .14, .34);
+        const serviceIn = between(progress, .27, .57);
+        const flowIn = between(progress, .51, .67);
+
+        mono.style.opacity = String(1 - monoOut);
+        mono.setAttribute("transform", `translate(216 110) scale(${1 - monoOut * .22})`);
+        services.style.opacity = String(serviceIn);
+        connections.style.opacity = String(flowIn * .72);
+        packets.style.opacity = String(flowIn);
+
+        serviceNodes.forEach((node, index) => {
+          const local = between(progress, .28 + index * .065, .48 + index * .065);
+          const origins = [[92, 70], [340, 70], [216, 165]];
+          const [x, y] = origins[index];
+          const offset = (1 - local) * 24;
+          node.setAttribute("transform", `translate(${x} ${y + offset}) scale(${.82 + local * .18})`);
+          node.style.opacity = String(local);
+        });
+
+        const cycle = ((progress - .57) / .27 + 10) % 1;
+        const upper = point({ x: 148, y: 70 }, { x: 216, y: 18 }, { x: 284, y: 70 }, cycle);
+        const lowerCycle = (cycle + .46) % 1;
+        const lower = point({ x: 148, y: 70 }, { x: 216, y: 204 }, { x: 284, y: 70 }, lowerCycle);
+        packetNodes[0].setAttribute("transform", `translate(${upper.x} ${upper.y})`);
+        packetNodes[1].setAttribute("transform", `translate(${lower.x} ${lower.y})`);
+
+        if (progress < .27) {
+          captionTitle.textContent = "Một hệ thống, mọi thứ cùng nhịp.";
+          captionCopy.textContent = "Thay đổi nhỏ cũng kéo cả hệ thống đi cùng.";
+        } else if (progress < .62) {
+          captionTitle.textContent = "Tách đúng trách nhiệm.";
+          captionCopy.textContent = "API nhận yêu cầu · Worker xử lý · Data giữ trạng thái.";
+        } else {
+          captionTitle.textContent = "Luồng mới rõ ràng và đo được.";
+          captionCopy.textContent = "Thấy dữ liệu đi đâu, lỗi ở đâu và phần nào cần mở rộng.";
+        }
+        progressBar.style.transform = `scaleX(${progress})`;
+        document.documentElement.dataset.hyperframeTime = String(Math.round(time));
+        document.documentElement.dataset.hyperframeComplete = progress >= 1 ? "true" : "false";
+      }
+
+      function cancelScheduledFrame() {
+        if (frameRequest !== null) {
+          cancelAnimationFrame(frameRequest);
+          frameRequest = null;
+        }
+      }
+
+      function scheduleTick() {
+        if (!manual && frameRequest === null) frameRequest = requestAnimationFrame(tick);
+      }
+
+      function seek(milliseconds) {
+        manual = true;
+        manualLocked = true;
+        cancelScheduledFrame();
+        pausedAt = clamp(Number(milliseconds) || 0, 0, durationMs);
+        applyFrame(pausedAt);
+      }
+
+      function play() {
+        if (manualLocked || pausedAt >= durationMs) return;
+        manual = false;
+        playStarted = performance.now() - pausedAt;
+        scheduleTick();
+      }
+
+      function pause() {
+        manual = true;
+        cancelScheduledFrame();
+      }
+
+      function tick(now) {
+        frameRequest = null;
+        if (manual) return;
+        pausedAt = Math.min(durationMs, Math.max(0, now - playStarted));
+        applyFrame(pausedAt);
+        if (pausedAt < durationMs) scheduleTick();
+        else manual = true;
+      }
+
+      applyFrame(0);
+      window.__hyperframe = Object.freeze({
+        durationMs,
+        ready: Promise.resolve(true),
+        seek,
+        play,
+        pause,
+      });
+      scheduleTick();
+    })();
+  </script>
+</body>
+</html>
